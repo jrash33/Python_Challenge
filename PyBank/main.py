@@ -1,66 +1,48 @@
 import csv
 import os
-import string
-import numpy as np
-import statistics
+import pandas as pd
 
 #IMPORT DATA####################################################
 #read the csv
-path_to_file=os.path.join(".","budget_data.csv")
+path=os.path.join(".","budget_data.csv")
 
-#initialize lists
-date=[]
-profit_losses=[]
-
-with open(path_to_file,newline="",encoding="utf8") as csvfile:
-    data=csv.reader(csvfile, delimiter=',')
-
-    for row in data:
-        #write to lists
-        date.append(row[0])
-        profit_losses.append(row[1])
-
+#import data as csv
+data=pd.read_csv(path)
 
 #MAIN###########################################################
 print("Financial Analysis:")
 print("---------------------")
 
-#delete headers in each list
-del date[0]
-del profit_losses[0]
-
 #TOTAL MONTHS
-total_months=len(date)
+total_months=data.shape[0]
 print(f"Total Months: {total_months}")
 
 #NET TOTAL PROFIT/LOSSES
-#convert list of strings to ints
-profit_losses_int=profit_losses
-profit_losses_int = list(map(int, profit_losses_int))
 #sum function of all integers in list
-total_profit_losses=sum(profit_losses_int)
+total_profit_losses=data["Profit/Losses"].sum()
 print(f"Total: ${total_profit_losses}")
 
 #DIFFERENCE AVERAGES
-all_diffs=np.diff(profit_losses_int)
-diff_avg=np.mean(all_diffs)
+all_diffs=data['Profit/Losses']
+all_diffs=all_diffs.diff()
+diff_avg=all_diffs.mean()
 print(f"Average Change: ${round(diff_avg,2)}")
 
 #GREATEST INCREASE/DECREASE IN PROFITS
 
 #find greatest increase value
-greatest_inc=np.max(all_diffs)
+greatest_inc=all_diffs.max()
 #find greatest decrease value
-lowest_inc=np.min(all_diffs)
+lowest_inc=all_diffs.min()
 
 #find date of greatest increase
-month_max=date[list(all_diffs).index(greatest_inc)+1]
+date=data["Date"]
+month_max=date[list(all_diffs).index(greatest_inc)]
 #find date of greatest decrease
-month_min=date[list(all_diffs).index(lowest_inc)+1]
+month_min=date[list(all_diffs).index(lowest_inc)]
 
-print(f"Greatest Increase in Profits: {month_max} (${greatest_inc})")
-print(f"Greatest Decrease in Profits: {month_min} (${lowest_inc})")
-
+print(f"Greatest Increase in Profits: {month_max} (${int(greatest_inc)})")
+print(f"Greatest Decrease in Profits: {month_min} (${int(lowest_inc)})")
 
 #EXPORT###########################################################
 
@@ -82,3 +64,4 @@ with open(output_file, "w", newline="") as datafile:
     writer = csv.writer(datafile)
 
     writer.writerows(all_lines)
+
